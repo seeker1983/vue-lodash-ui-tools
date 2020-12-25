@@ -1,0 +1,68 @@
+<template>
+  <div>
+  	<div class=migration> 
+  		Formula: <input type=text v-model='formula' @input="save('formula', $event.target.value)">
+  		<select v-model=formula @change="save('formula', $event.target.value)">
+  			<option v-for="item in FORMULAS" :value="'_.' + item+'(A,B)'"> {{item}} </option>
+  		</select>
+  	</div>
+	<div class="sections">
+	  <Section name="Input A" v-model="A" @input="save('A', $event)"/>
+	  <Section name="Input B" v-model="B" @input="save('B', $event)"/>
+	  <Section name="Result" v-model="result"/>
+	</div>
+  </div>
+</template>
+
+<script>
+// @ is an alias to /src
+import Section from '@/components/Section.vue'
+import _ from 'lodash'
+
+export default {
+  name: 'Tools',
+  created() {
+	this.FORMULAS = ['intersection', 'difference','merge','union','zipObject'];
+  },
+  data() {
+  	return _.mapValues({
+  			formula: '_.difference(A,B)',
+  			A: { json: [], type:'rows' },
+  			B: { json: [], type:'rows' },
+  			result: { json: [], type:'rows' },
+  		}, (def, variable) => this.load(variable, def)
+  	);
+  },
+  components: {
+    Section
+  },
+  methods: {
+  	save(id, value){
+  		console.log(id, value)
+  		localStorage[id] = JSON.stringify(value);
+  		this.result = this.calc_result(this.A.json, this.B.json, this.formula);
+  	},
+  	load(id, def) {
+  		try { return JSON.parse(localStorage[id]) }
+  		catch(e) {return _.cloneDeep(def)};
+  	},
+  	calc_result(A, B, formula){
+  		var value = eval(formula);
+  		return {
+  			json: eval(formula),
+  			type: value instanceof Array ? 'rows' : 'object'
+  		}
+  	},
+  },
+}
+</script>
+<style scoped> 
+.sections {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+select {
+	margin: 5px;
+}
+</style>
