@@ -1,9 +1,18 @@
 <template>
   <div>
+    <div class=state> Save
+      <input type=button value=A @click="save_state">
+      <input type=button value=B @click="save_state">
+      <input type=button value=C @click="save_state">
+    Load
+      <input type=button value=A @click="load_state">
+      <input type=button value=B @click="load_state">
+      <input type=button value=C @click="load_state">
+    </div>
   	<div class=migration> 
-  		Formula: <input type=text v-model='formula' @input="save('formula', $event.target.value)">
-  		<select v-model=formula @change="save('formula', $event.target.value)">
-  			<option v-for="item in FORMULAS" :value="'_.' + item+'(A,B)'"> {{item}} </option>
+  		Formula: <input type=text class=formula v-model='formula' @input="save('formula', $event.target.value)">
+  		<select class=formula v-model=formula @change="save('formula', $event.target.value)">
+  			<option v-for="formula, name in FORMULAS" :value="formula"> {{name}} </option>
   		</select>
   	</div>
 	<div class="sections">
@@ -22,7 +31,11 @@ import _ from 'lodash'
 export default {
   name: 'Tools',
   created() {
-	this.FORMULAS = ['intersection', 'difference','merge','union','zipObject'];
+   var basics = ['intersection', 'difference','merge','union','zipObject'];
+	 this.FORMULAS = _.assign({
+      "find_duplicates" : "_(A).groupBy().pickBy(x => x.length > 1).keys().value()",
+   }, _.zipObject(basics, basics.map(item => `_.${item}(A,B)`)));
+   
   },
   data() {
   	return _.mapValues({
@@ -39,9 +52,20 @@ export default {
   methods: {
   	save(id, value){
   		console.log(id, value)
+      window[id] = value.json
   		localStorage[id] = JSON.stringify(value);
   		this.result = this.calc_result(this.A.json, this.B.json, this.formula);
   	},
+    save_state(e){
+      if(e.target.value) {
+        localStorage['slot-'+e.target.value] = JSON.stringify(_.pick(this, ["formula", "A", "B"]));
+      }
+    },
+    load_state(e){
+      var data = localStorage['slot-'+e.target.value];
+      data && _.assign(this, JSON.parse(data));
+
+    },
   	load(id, def) {
   		try { return JSON.parse(localStorage[id]) }
   		catch(e) {return _.cloneDeep(def)};
@@ -64,5 +88,29 @@ export default {
 }
 select {
 	margin: 5px;
+}
+input.formula {
+  width: 600px;
+}
+.formula,{
+  font-size: 18px;
+}
+.migration {
+  padding-bottom: 15px;
+  padding-top: 15px;
+  margin-left: 120px;
+  margin-right: 120px;
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  border: 2px dashed black;
+}
+input[type=button] {
+  font-size: 24px;
+  margin: 10px;
+}
+.state  {
+   font-weight: bold;
+   font-size: 24px;
 }
 </style>
