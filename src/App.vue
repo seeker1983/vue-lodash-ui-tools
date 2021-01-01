@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <h2> Live Links Diff Tools </h2>
+    <h2> Vue Diff Tools </h2>
     <div id="nav" v-show=0>
       <router-link to="/">Lodash Converter</router-link> |
       <router-link to="/about">Info</router-link> |
